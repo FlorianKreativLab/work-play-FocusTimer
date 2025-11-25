@@ -1,10 +1,11 @@
 // ui.js
-window.addEventListener("DOMContentLoaded", () => {
+
   // ---------- Panel öffnen / schließen ----------
+function initHudPanel() {
   const panel = document.getElementById("hud-panel");
   const toggleBtn = document.getElementById("hud-panel-toggle");
   const closeBtn = document.getElementById("hud-panel-close");
-
+  
   if (!panel || !toggleBtn || !closeBtn) {
     return; // HUD nicht vorhanden
   }
@@ -16,7 +17,12 @@ window.addEventListener("DOMContentLoaded", () => {
   closeBtn.addEventListener("click", () => {
     panel.classList.remove("open");
   });
+}
 
+
+window.addEventListener("DOMContentLoaded", () => {
+  // ---------- Panel öffnen / schließen ----------
+  initHudPanel();
   // Initialisierung der Reminder (Aufstehen, Trinken, Stretching)
   initReminders();
 
