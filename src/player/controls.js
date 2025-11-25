@@ -1,4 +1,5 @@
 import * as THREE from "/libs/three/three.module.js";
+import { isGameLocked } from "../core/gameState.js";
 
 export class PlayerControls {
   constructor(character, getHeightAt) {
@@ -22,6 +23,7 @@ export class PlayerControls {
 
     let moving = false;
     const model = this.character.model;
+    
 
     // Vorwärts-/Rückwärtsbewegung in Blickrichtung
     const forward = new THREE.Vector3();
@@ -35,24 +37,28 @@ export class PlayerControls {
     const right = new THREE.Vector3();
     right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
 
-    if (this.keys.w) {
+    //Bewegung nur erlauben, wenn das Spiel nicht gesperrt ist
+    
+    if (!isGameLocked()) {
+      if (this.keys.w) {
       model.position.addScaledVector(forward, this.speed * delta);
       moving = true;
-    }
+      }
 
-    if (this.keys.s) {
-      model.position.addScaledVector(forward, -this.speed * delta);
-      moving = true;
-    }
+      if (this.keys.s) {
+        model.position.addScaledVector(forward, -this.speed * delta);
+        moving = true;
+      }
 
-    if (this.keys.a) {
-      model.rotation.y += 2 * delta;
-      moving = true;
-    }
+      if (this.keys.a) {
+        model.rotation.y += 2 * delta;
+        moving = true;
+      }
 
-    if (this.keys.d) {
-      model.rotation.y -= 2 * delta;
-      moving = true;
+      if (this.keys.d) {
+        model.rotation.y -= 2 * delta;
+        moving = true;
+      }
     }
 
     // ✅ Figur auf Terrain-Höhe setzen
