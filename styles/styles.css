@@ -1,0 +1,470 @@
+/* --- Allgemeines Layout --- */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+    background-color: black;
+  
+}
+
+canvas#three-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/* HUD-Overlay über der Scene */
+#hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* blockiert nicht die 3D-Steuerung */
+}
+
+/* ---------- TOP BEREICH ---------- */
+
+.hud-top {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  pointer-events: none;
+}
+
+.hud-top-left {
+  display: flex;
+  gap: 8px;
+}
+
+/* Kacheln oben links (Timer + 3 Reminder) */
+.hud-tile {
+  min-width: 70px;
+  min-height: 40px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  backdrop-filter: blur(6px);
+}
+
+.hud-tile-label {
+  font-size: 10px;
+  opacity: 0.7;
+  margin-bottom: 2px;
+}
+
+.hud-tile-main {
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hud-indicator-icon {
+  font-size: 18px;
+  margin-right: 4px;
+}
+
+/* visuelles Aufleuchten */
+.indicator-flash {
+  animation: indicatorPulse 1.4s ease-out;
+}
+
+@keyframes indicatorPulse {
+  0% {
+    background: rgba(46, 204, 113, 0.8);
+    box-shadow: 0 0 14px rgba(46, 204, 113, 0.9);
+  }
+  60% {
+    background: rgba(46, 204, 113, 0.3);
+    box-shadow: 0 0 4px rgba(46, 204, 113, 0.4);
+  }
+  100% {
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: none;
+  }
+}
+
+/* rechts oben: Panel-Button */
+
+.hud-top-right {
+  pointer-events: all;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+#hud-panel-toggle {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+  margin-top: 0;
+  transition: background 0.1s ease, transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+#hud-panel-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+#hud-panel-toggle:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ---------- RECHTES UI PANEL ---------- */
+
+#hud-panel {
+  position: absolute;
+  top: 70px;
+  right: 16px;
+  bottom: 60px;
+  width: 260px;
+  max-width: 80vw;
+  border-radius: 16px;
+  background: rgba(5, 5, 10, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+  padding: 16px 14px;
+  color: #fff;
+  pointer-events: all;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  backdrop-filter: blur(12px);
+}
+
+#hud-panel.open {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.hud-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.hud-panel-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.hud-panel-close {
+  cursor: pointer;
+  border: none;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 12px;
+}
+
+.hud-panel-section-title {
+  font-size: 11px;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.hud-panel-note {
+  font-size: 11px;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+/* Zeilen im Panel */
+.hud-panel-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.hud-panel-row label {
+  font-size: 11px;
+  opacity: 0.8;
+  min-width: 70px;
+}
+
+/* Selects kleiner */
+.hud-panel-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: nowrap; /* verhindert Umbruch, hält alles in einer Reihe */
+}
+
+.hud-panel-row input[type="number"] {
+  flex: 0 0 60px;
+  max-width: 60px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 8px;
+  /* display: block;  <- diese Zeile entfernen */
+}
+
+.hud-panel-row button {
+  font-size: 11px;
+  border-radius: 999px;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  background: rgba(46, 204, 113, 0.85);
+  color: #000;
+  
+}
+
+/* Sequence-Liste */
+
+#focus-sequence-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  max-height: 120px;
+  overflow: auto;
+  font-size: 11px;
+}
+
+#focus-sequence-list li {
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+}
+
+#focus-sequence-list li span {
+  opacity: 0.85;
+}
+
+.sequence-remove {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+
+#focus-sequence-start {
+  margin-top: 6px;
+  width: 100%;
+  border-radius: 999px;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  background: rgba(52, 152, 219, 0.9);
+  color: #fff;
+}
+
+/* ---------------------------------------- */
+/* Focus/Pause Farben + Drag & Drop Styles  */
+/* ---------------------------------------- */
+
+#focus-sequence-list li {
+  border-left: 3px solid transparent;
+  cursor: grab;
+  transition: background 0.15s ease, transform 0.1s ease,
+    box-shadow 0.1s ease;
+}
+
+/* Focus-Phasen: grünlich */
+#focus-sequence-list li.phase-focus {
+  background: rgba(46, 204, 113, 0.12);
+  border-left-color: rgba(46, 204, 113, 0.9);
+}
+
+/* Pausen-Phasen: bläulich/grau */
+#focus-sequence-list li.phase-pause {
+  background: rgba(52, 152, 219, 0.12);
+  border-left-color: rgba(52, 152, 219, 0.9);
+}
+
+/* Blöcke (Fokus+Pause) einheitlich grünlich markieren */
+#focus-sequence-list li.phase-block {
+  background: rgba(46, 204, 113, 0.12);
+  border-left-color: rgba(46, 204, 113, 0.9);
+}
+
+/* Während Drag */
+#focus-sequence-list li.dragging {
+  opacity: 0.6;
+  transform: scale(0.99);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Drop-Ziel */
+#focus-sequence-list li.drag-over {
+  outline: 1px dashed rgba(255, 255, 255, 0.7);
+}
+
+/* ---------- FOOTER ---------- */
+
+.hud-footer {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+
+.hud-footer-left {
+  display: flex;
+  gap: 8px;
+  pointer-events: all;
+}
+
+.hud-footer-badge {
+  border: none;
+  outline: none;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 18px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-footer-badge span {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.9;
+}
+
+.hud-footer-right {
+  pointer-events: all;
+  font-size: 11px;
+  opacity: 0.6;
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .hud-top {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .hud-top-left {
+    flex-wrap: wrap;
+    max-width: 70vw;
+  }
+
+  #hud-panel {
+    width: 230px;
+  }
+}
+
+.hud-top-left .hud-tile {
+  flex: 0 0 110px;
+  width: 110px;
+  box-sizing: border-box;
+}
+/* Zusatzfeld „Name“ in Phase-Zeile */
+.hud-panel-row.phase-row input[type="text"] {
+  flex: 1 1 auto;
+  min-width: 80px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
+
+/* ---------------------------------------- */
+/* Fix: Panel-Button auf kleinen Screens    */
+/* ---------------------------------------- */
+
+/* ============================================= */
+/* UNIVERSALER FIX: Panel-Button immer sichtbar  */
+/* ============================================= */
+
+/* HUD-Bar darf nicht abschneiden */
+.hud-top {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  overflow: visible !important;
+}
+
+/* Container rechts darf NICHT einklappen */
+.hud-top-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  overflow: visible !important;
+  flex-shrink: 0 !important;
+  max-width: none !important;
+}
+
+/* Der Button selbst darf NICHT aus dem Layout fallen */
+#hud-panel-toggle {
+  white-space: nowrap;
+  overflow: visible !important;
+  flex-shrink: 0 !important;
+  max-width: none !important;
+}
+@media (max-width: 900px) {
+  .hud-top {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .hud-top-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

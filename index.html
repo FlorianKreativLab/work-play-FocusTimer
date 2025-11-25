@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Focus Webanwendung</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+  </head>
+  <body>
+    <!-- Three.js Scene -->
+    <canvas id="three-canvas"></canvas>
+
+    <!-- HUD / UI Overlay -->
+    <div id="hud">
+      <!-- TOP: links 4 Felder, rechts Panel-Button -->
+      <div class="hud-top">
+        <!-- LINKS: Timer + 3 Reminder-Indicatoren -->
+        <div class="hud-top-left">
+          <!-- Timer -->
+          <div class="hud-tile">
+            <div class="hud-tile-label">Timer</div>
+            <div class="hud-tile-main" id="hud-timer">bereit</div>
+          </div>
+
+          <!-- Aufstehen -->
+          <div class="hud-tile" id="indicator-stand">
+            <div class="hud-tile-label">Aufstehen</div>
+            <div class="hud-tile-main">
+              <span class="hud-indicator-icon">🧍</span>
+              <span id="indicator-stand-text">aus</span>
+            </div>
+          </div>
+
+          <!-- Trinken -->
+          <div class="hud-tile" id="indicator-drink">
+            <div class="hud-tile-label">Trinken</div>
+            <div class="hud-tile-main">
+              <span class="hud-indicator-icon">☕</span>
+              <span id="indicator-drink-text">aus</span>
+            </div>
+          </div>
+
+          <!-- Stretch -->
+          <div class="hud-tile" id="indicator-stretch">
+            <div class="hud-tile-label">Stretch</div>
+            <div class="hud-tile-main">
+              <span class="hud-indicator-icon">🤸</span>
+              <span id="indicator-stretch-text">aus</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECHTS: Panel öffnen -->
+        <div class="hud-top-right">
+          <button id="hud-panel-toggle">
+            ☰
+            <span>Panel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- RECHTES PANEL -->
+      <aside id="hud-panel">
+        <div class="hud-panel-header">
+          <div class="hud-panel-title">Focus Panel</div>
+          <button class="hud-panel-close" id="hud-panel-close">✕</button>
+        </div>
+
+        <!-- Reminder-Intervalle -->
+        <div>
+          <div class="hud-panel-section-title">Erinnerungen</div>
+          <p class="hud-panel-note">
+            Stelle ein, wie oft du an bestimmte Dinge erinnert werden möchtest.
+          </p>
+          <div class="hud-panel-row">
+            <label for="interval-stand">Aufstehen</label>
+            <select id="interval-stand">
+              
+              <option value="0" selected>Aus</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
+            </select>
+          </div>
+          <div class="hud-panel-row">
+            <label for="interval-drink">Trinken</label>
+            <select id="interval-drink">
+              <option value="0" selected>Aus</option>
+              <option value="20">20 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
+            </select>
+          </div>
+          <div class="hud-panel-row">
+            <label for="interval-stretch">Stretch</label>
+            <select id="interval-stretch">
+              <option value="0" selected>Aus</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">60 min</option>
+              <option value="90">90 min</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Fokus-/Pausen-Liste -->
+        <div>
+          <div class="hud-panel-section-title">Focus & Pausen Sequenz</div>
+          <p class="hud-panel-note">
+            Lege mehrere Focus- und Pausen-Blöcke an, die nacheinander ablaufen.
+            Der Timer oben startet erst, wenn du die Sequenz startest.
+          </p>
+
+          <div class="hud-panel-row phase-row">
+            <label for="phase-name">Block</label>
+            <input
+              type="text"
+              id="phase-name"
+              placeholder="z.B. Deep Work Block"
+            />
+          </div>
+
+          <div class="hud-panel-row">
+            <label for="phase-focus-minutes">Fokus / Pause</label>
+            <select id="phase-focus-minutes">
+              <option value="5">5 Min</option>
+              <option value="10">10 Min</option>
+              <option value="15" selected>15 Min</option>
+              <option value="20">20 Min</option>
+              <option value="25">25 Min</option>
+              <option value="30">30 Min</option>
+              <option value="45">45 Min</option>
+              <option value="60">60 Min</option>
+              <option value="90">90 Min</option>
+            </select>
+            <select id="phase-pause-minutes">
+              <option value="5" selected>5 Min</option>
+              <option value="10">10 Min</option>
+              <option value="15">15 Min</option>
+              <option value="20">20 Min</option>
+              <option value="25">25 Min</option>
+              <option value="30">30 Min</option>
+              <option value="45">45 Min</option>
+              <option value="60">60 Min</option>
+            </select>
+            <button id="phase-add">+</button>
+          </div>
+
+          <ul id="focus-sequence-list"></ul>
+
+          <button id="focus-sequence-start">Sequenz starten</button>
+        </div>
+      </aside>
+
+      <!-- FOOTER -->
+      <div class="hud-footer">
+        <!-- links: Baum + Anzahl -->
+        <div class="hud-footer-left">
+          <div class="hud-footer-badge" id="footer-trees">
+            🌳
+            <span id="tree-count">0 Bäume</span>
+          </div>
+        </div>
+
+        <!-- rechts: kleiner Text / Version -->
+        <div class="hud-footer-right">Focus Webanwendung · v0.1</div>
+      </div>
+    </div>
+
+    <!-- Three.js Logik -->
+    <script type="module" src="/main.js"></script>
+    <!-- UI-Logik -->
+    <script type="module" src="/ui.js"></script>
+  </body>
+</html>
