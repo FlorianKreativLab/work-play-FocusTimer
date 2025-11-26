@@ -1,5 +1,7 @@
 // ui.js
 
+import { lockGame, unlockGame } from "./src/core/gameState";
+
   // ---------- Panel öffnen / schließen ----------
 function initHudPanel() {
   const panel = document.getElementById("hud-panel");
@@ -346,6 +348,10 @@ window.addEventListener("DOMContentLoaded", () => {
         clearInterval(timerIntervalId);
         timerIntervalId = null;
       }
+
+      unlockGame();
+
+      
       sequenceRunning = false;
       currentBlockIndex = -1;
       currentPart = 0;
@@ -353,7 +359,9 @@ window.addEventListener("DOMContentLoaded", () => {
       setTimerText("bereit");
       if (sequenceStartBtn) {
         sequenceStartBtn.textContent = "Sequenz starten";
+        
       }
+      
       // Nach Stopp Drag & Drop wieder aktivieren
       renderSequence();
     }
@@ -367,6 +375,11 @@ window.addEventListener("DOMContentLoaded", () => {
       if (sequenceStartBtn) {
         sequenceStartBtn.textContent = "Stoppen";
       }
+
+      // Spieler sperren während der Fokus-/Pausen-Sequenz
+      lockGame();
+
+
       // Während Lauf Drag & Drop deaktivieren
       renderSequence();
       startCurrentPhase();
@@ -413,6 +426,11 @@ window.addEventListener("DOMContentLoaded", () => {
           setTimerText(phaseLabel + " – 00:00");
           clearInterval(timerIntervalId);
           timerIntervalId = null;
+
+          //Spieler enstperren, wenn die gesamte Sequenz fertig ist
+          if (currentBlockIndex === sequence.length - 1 && !isFocus) {
+            unlockGame();
+          }
 
           // Baum pflanzen nach abgeschlossener Fokusphase
           if (isFocus) {
