@@ -1,9 +1,11 @@
 import * as THREE from "/libs/three/three.module.js";
 
-import { scene } from "./src/core/scene.js";
+
+import scene, { sunLight, moonLight, sunMesh, moonMesh } 
+  from "./src/core/scene.js";
 import { renderer } from "./src/core/renderer.js";
 import { camera, setupCameraControls, updateCamera } from "./src/core/camera.js";
-
+import { getDayNightProgress } from "./src/core/dayNight.js";
 import { createTerrain, getHeightAt } from "./src/world/terrain.js";
 import { loadHouse } from "./src/world/house.js";
 
@@ -71,8 +73,31 @@ function animate() {
 
   updateCamera(character, getHeightAt);
 
+  // Tag-Nacht-Zyklus: Sonne und Mond Position
+ const p = getDayNightProgress();
+ const angle = p * Math.PI * 2;
+
+  //const time = performance.now() * 0.00015;
+  //const angle = (time % (Math.PI * 2));  // Zeit in Sekunden
+
+  sunLight.position.set(
+    Math.cos(angle) * 200,
+    Math.sin(angle) * 200,
+    50
+  );
+
+  moonLight.position.set(
+    Math.cos(angle + Math.PI) * 200,
+    Math.sin(angle + Math.PI) * 200,
+    -50
+  );
+
+  sunMesh.position.copy(sunLight.position);
+  moonMesh.position.copy(moonLight.position);
+
   renderer.render(scene, camera);
 }
+
 
 // Start
 init();
