@@ -204,16 +204,16 @@ window.addEventListener("DOMContentLoaded", () => {
     let timerIntervalId = null;
     let sequenceRunning = false;
 
-    // Bäume
-    const treeCountEl = document.getElementById("tree-count");
-    let treeCount = 0;
+   
+    const gemCountEl = document.getElementById("gem-count");
+    let gemCount = 0;
 
-    function updateTreeCount() {
-      if (!treeCountEl) return;
-      treeCountEl.textContent =
-        treeCount + " " + (treeCount === 1 ? "Baum" : "Bäume");
+    function updateGemCount() {
+      if (!gemCountEl) return;
+      gemCountEl.textContent =
+        gemCount + " " + (gemCount === 1 ? "Edelstein" : "Edelsteine");
     }
-    updateTreeCount();
+    updateGemCount();
 
     function setTimerText(text) {
       if (timerEl) {
@@ -349,9 +349,7 @@ window.addEventListener("DOMContentLoaded", () => {
         timerIntervalId = null;
       }
 
-      unlockGame();
 
-      
       sequenceRunning = false;
       currentBlockIndex = -1;
       currentPart = 0;
@@ -364,6 +362,9 @@ window.addEventListener("DOMContentLoaded", () => {
       
       // Nach Stopp Drag & Drop wieder aktivieren
       renderSequence();
+
+      //Spieler wieder freigeben
+      unlockGame();
     }
 
     function startSequence() {
@@ -427,15 +428,10 @@ window.addEventListener("DOMContentLoaded", () => {
           clearInterval(timerIntervalId);
           timerIntervalId = null;
 
-          //Spieler enstperren, wenn die gesamte Sequenz fertig ist
-          if (currentBlockIndex === sequence.length - 1 && !isFocus) {
-            unlockGame();
-          }
-
-          // Baum pflanzen nach abgeschlossener Fokusphase
-          if (isFocus) {
-            treeCount++;
-            updateTreeCount();
+          // Edelstein geben nach abgeschlossener Pausenphase
+          if (!isFocus) {
+            gemCount++;
+            updateGemCount();
           }
 
           // zur nächsten Phase wechseln
