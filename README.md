@@ -120,7 +120,7 @@ Dieses Projekt wächst im gleichen Tempo wie meine eigenen Skills.
 ## 🚀 Installation & Start
 
 ``` bash
-git clone https://github.com/FlorianKreativLab/work-and-play
+git clone https://github.com/FlorianKreativLab/work-play-FocusTimer
 cd work-and-play
 npm install
 npm run dev
@@ -194,7 +194,7 @@ The goal is understanding and learning.
 ## 🚀 Run locally
 
 ``` bash
-git clone https://github.com/FlorianKreativLab/work-and-play
+git clone https://github.com/FlorianKreativLab/work-play-FocusTimer
 npm install
 npm run dev
 ```
