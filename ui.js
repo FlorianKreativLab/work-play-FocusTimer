@@ -1,6 +1,6 @@
 // ui.js
 
-import { setDayNightProgress } from "./core/dayNight.js";
+import { setDayNightProgress } from "./src/core/dayNight.js";
 import { lockGame, unlockGame } from "./src/core/gameState";
 
   // ---------- Panel öffnen / schließen ----------
@@ -423,68 +423,60 @@ window.addEventListener("DOMContentLoaded", () => {
       const phaseLabel = isFocus ? `${baseName} – Fokus` : `${baseName} – Pause`;
 
       function updateTimerDisplay() {
-      const remaining = phaseEndTime - Date.now();
+        const remaining = phaseEndTime - Date.now();
 
-      if (remaining <= 0) {
-        setTimerText(phaseLabel + " – 00:00");
-        clearInterval(timerIntervalId);
-        timerIntervalId = null;
+        if (remaining <= 0) {
+          setTimerText(phaseLabel + " – 00:00");
+          clearInterval(timerIntervalId);
+          timerIntervalId = null;
 
-        // Edelstein geben nach abgeschlossener Pausenphase (kompletter Block fertig)
-        if (!isFocus) {
-          gemCount++;
-          updateGemCount();
+          // Edelstein nach abgeschlossener Pausephase
+          if (!isFocus) {
+            gemCount++;
+            updateGemCount();
+          }
+
+          // zur nächsten Phase wechseln
+          if (isFocus) {
+            currentPart = 1; // Fokus -> Pause
+          } else {
+            currentBlockIndex++; // Pause -> nächster Block
+            currentPart = 0;
+          }
+
+          // Day/Night am Phasenende auf exakten Wert setzen
+          if (isFocus) {
+            setDayNightProgress(0.5); // Ende Fokus = Tag fertig
+          } else {
+            setDayNightProgress(1.0); // Ende Pause = Nacht fertig
+          }
+
+          if (currentBlockIndex < sequence.length) {
+            startCurrentPhase();
+          } else {
+            stopTimer();
+          }
+          return;
         }
 
-        // zur nächsten Phase wechseln
+        // 🔽 Hier: Timer läuft noch, also Fortschritt berechnen
+        const elapsedMs = durationMs - remaining;
+        let phaseProgress = elapsedMs / durationMs;
+
+        if (phaseProgress < 0) phaseProgress = 0;
+        if (phaseProgress > 1) phaseProgress = 1;
+
+        let blockProgress;
         if (isFocus) {
-          // Von Fokus zu Pause
-          currentPart = 1;
+          blockProgress = phaseProgress * 0.5;          // 0 → 0.5
         } else {
-          // Von Pause zum nächsten Block
-          currentBlockIndex++;
-          currentPart = 0;
+          blockProgress = 0.5 + phaseProgress * 0.5;    // 0.5 → 1
         }
 
-        // Day/Night am Phasenende auf exakten Wert setzen
-        if (isFocus) {
-          setDayNightProgress(0.5); // Ende Fokus = Tag ist voll durch
-        } else {
-          setDayNightProgress(1.0); // Ende Pause = Nacht ist voll durch
-        }
-
-        if (currentBlockIndex < sequence.length) {
-          startCurrentPhase();
-        } else {
-          stopTimer();
-        }
-        return;
-      }
-
-      // 🔽 Hier: Timer läuft noch, Fortschritt für Sonnen-/Mondzyklus berechnen
-
-      // Wie lange die Phase insgesamt dauert (kommt aus startCurrentPhase)
-      const elapsedMs = durationMs - remaining;
-      let phaseProgress = elapsedMs / durationMs;
-
-      // Sicherheit: auf 0–1 begrenzen
-      if (phaseProgress < 0) phaseProgress = 0;
-      if (phaseProgress > 1) phaseProgress = 1;
-
-      // Block-Fortschritt (Tag+Nacht): Fokus = 0–0.5, Pause = 0.5–1.0
-      let blockProgress;
-      if (isFocus) {
-        blockProgress = phaseProgress * 0.5;          // 0 → 0.5
-      } else {
-        blockProgress = 0.5 + phaseProgress * 0.5;    // 0.5 → 1.0
-      }
-
-      setDayNightProgress(blockProgress);
+        setDayNightProgress(blockProgress);
 
         const totalSeconds = Math.floor(remaining / 1000);
-        const minutesLeft = String(
-          Math.floor(totalSeconds / 60)
-        ).padStart(2, "0");
+        const minutesLeft = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
         const secondsLeft = String(totalSeconds % 60).padStart(2, "0");
         setTimerText(`${phaseLabel} – ${minutesLeft}:${secondsLeft}`);
       }
