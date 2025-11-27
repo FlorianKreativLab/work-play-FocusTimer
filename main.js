@@ -1,8 +1,16 @@
 import * as THREE from "/libs/three/three.module.js";
 
 
-import scene, { sunLight, moonLight, sunMesh, moonMesh } 
-  from "./src/core/scene.js";
+import scene, {
+  ambientLight,
+  sunLight,
+  moonLight,
+  sunMesh,
+  moonMesh,
+  daySky,
+  nightSky,
+  // optional ambientLight ...
+} from "./src/core/scene.js";
 import { renderer } from "./src/core/renderer.js";
 import { camera, setupCameraControls, updateCamera } from "./src/core/camera.js";
 import { getDayNightProgress } from "./src/core/dayNight.js";
@@ -73,30 +81,55 @@ function animate() {
 
   updateCamera(character, getHeightAt);
 
-  // Tag-Nacht-Zyklus: Sonne und Mond Position
- const p = getDayNightProgress();
- const angle = p * Math.PI * 2;
 
-  //const time = performance.now() * 0.00015;
-  //const angle = (time % (Math.PI * 2));  // Zeit in Sekunden
 
+  // Weicher, kontrollierter Tag/Nacht-Faktor
+  const p = getDayNightProgress();     // 0..1
+  const angle = p * Math.PI * 2;
+
+  // Fokus = Tag, Pause = Übergang zu Nacht
+  let dayFactor;
+  if (p < 0.5) {
+    dayFactor = 1;                          // voller Tag
+  } else {
+    const t = (p - 0.5) / 0.5;              // 0..1
+    dayFactor = 1 - t;                      // 1 -> 0
+  }
+
+  // unten ausklingen lassen -> richtige Nacht
+  if (dayFactor < 0.2) dayFactor = 0;
+
+  // Himmel
+  if (character && character.model) {
+    const playerPos = character.model.position;
+    daySky.position.copy(playerPos);
+    nightSky.position.copy(playerPos);
+  }
+
+  daySky.material.opacity = dayFactor;
+  nightSky.material.opacity = 1 - dayFactor;
+
+  // Licht
+  ambientLight.intensity = 0.1 + 0.7 * dayFactor;
+  sunLight.intensity      = dayFactor;
+  moonLight.intensity     = 1 - dayFactor;
+
+  // Sonne & Mond (wie gehabt)
   sunLight.position.set(
-    Math.cos(angle) * 200,
-    Math.sin(angle) * 200,
-    50
+    Math.cos(angle) * 400,
+    Math.sin(angle) * 400,
+    0
   );
-
   moonLight.position.set(
-    Math.cos(angle + Math.PI) * 200,
-    Math.sin(angle + Math.PI) * 200,
-    -50
+    Math.cos(angle + Math.PI) * 400,
+    Math.sin(angle + Math.PI) * 400,
+    0
   );
-
   sunMesh.position.copy(sunLight.position);
   moonMesh.position.copy(moonLight.position);
 
   renderer.render(scene, camera);
-}
+  }
 
 
 // Start
