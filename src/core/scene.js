@@ -4,7 +4,7 @@ import * as THREE from "/libs/three/three.module.js";
 export const scene = new THREE.Scene();
 
 // Nebel 
-scene.fog = new THREE.FogExp2(0x87ceeb, 0.003);
+//scene.fog = new THREE.FogExp2(0xff0000, 0.0003);
 
 // Ambient-Licht
 export const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -23,7 +23,7 @@ sunMesh.position.set(0, 100, 0);
 scene.add(sunMesh);
 
 // Mond (Licht)
-export const moonLight = new THREE.DirectionalLight(0x9999ff, 0.2);
+export const moonLight = new THREE.DirectionalLight(0x9999ff, 0.3);
 moonLight.position.set(0, -100, 0);
 scene.add(moonLight);
 
@@ -48,7 +48,7 @@ const daySkyMaterial = new THREE.MeshBasicMaterial({
 
 const nightSkyGeometry = new THREE.SphereGeometry(5000, 60, 40);
 const nightSkyMaterial = new THREE.MeshBasicMaterial({
-    color: 0x000011,
+    color: 0x000000,
     side: THREE.BackSide,
     transparent: true,
     opacity: 0
