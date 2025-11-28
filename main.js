@@ -9,7 +9,6 @@ import scene, {
   moonMesh,
   daySky,
   nightSky,
-  // optional ambientLight ...
 } from "./src/core/scene.js";
 import { renderer } from "./src/core/renderer.js";
 import { camera, setupCameraControls, updateCamera } from "./src/core/camera.js";
@@ -19,6 +18,7 @@ import { loadHouse } from "./src/world/house.js";
 
 import { Character } from "./src/player/character.js";
 import { PlayerControls } from "./src/player/controls.js";
+import { isGameLocked } from "./src/core/gameState.js";
 
 // -------------------------------------------------
 // Welt aufbauen
@@ -71,7 +71,9 @@ handleResize();
 // Render-Loop
 // -------------------------------------------------
 
+
 function animate() {
+  // immer
   requestAnimationFrame(animate);
 
   const delta = clock.getDelta();
@@ -81,55 +83,80 @@ function animate() {
 
   updateCamera(character, getHeightAt);
 
-
-
-  // Weicher, kontrollierter Tag/Nacht-Faktor
-  const p = getDayNightProgress();     // 0..1
-  const angle = p * Math.PI * 2;
-
-  // Fokus = Tag, Pause = Übergang zu Nacht
-  let dayFactor;
-  if (p < 0.5) {
-    dayFactor = 1;                          // voller Tag
-  } else {
-    const t = (p - 0.5) / 0.5;              // 0..1
-    dayFactor = 1 - t;                      // 1 -> 0
-  }
-
-  // unten ausklingen lassen -> richtige Nacht
-  if (dayFactor < 0.2) dayFactor = 0;
-
-  // Himmel
+  // Himmel an Spielerposition kleben
   if (character && character.model) {
     const playerPos = character.model.position;
     daySky.position.copy(playerPos);
     nightSky.position.copy(playerPos);
   }
 
-  daySky.material.opacity = dayFactor;
-  nightSky.material.opacity = 1 - dayFactor;
+  const isTimerActive = isGameLocked();
 
-  // Licht
-  ambientLight.intensity = 0.1 + 0.7 * dayFactor;
-  sunLight.intensity      = dayFactor;
-  moonLight.intensity     = 1 - dayFactor;
+  if (isTimerActive) {
+    // ZYKLUSMODUS (Timer läuft)
 
-  // Sonne & Mond (wie gehabt)
-  sunLight.position.set(
-    Math.cos(angle) * 400,
-    Math.sin(angle) * 400,
-    0
-  );
-  moonLight.position.set(
-    Math.cos(angle + Math.PI) * 400,
-    Math.sin(angle + Math.PI) * 400,
-    0
-  );
-  sunMesh.position.copy(sunLight.position);
-  moonMesh.position.copy(moonLight.position);
+    const p = getDayNightProgress();     // 0..1
+    const angle = p * Math.PI * 2;       // 0..2π
+
+    // Sonne & Mond bewegen (Kreisbahn)
+    sunLight.position.set(
+      Math.cos(angle) * 600,
+      Math.sin(angle) * 600,
+      0
+    );
+    moonLight.position.set(
+      Math.cos(angle + Math.PI) * 600,
+      Math.sin(angle + Math.PI) * 600,
+      0
+    );
+    sunMesh.position.copy(sunLight.position);
+    moonMesh.position.copy(moonLight.position);
+
+    // Helligkeit abhängig von Sonnenhöhe
+    const sunY = sunLight.position.y;
+    const sunYmax = 600; // maximale Höhe auf der Kreisbahn
+
+    // Basis: 1 oben, 0 am/bis unter dem Horizont
+    let dayFactor = sunY / sunYmax;
+
+    // clamp auf 0..1
+    if (dayFactor > 1) dayFactor = 1;
+    if (dayFactor < 0) dayFactor = 0;
+
+    // Licht: Ambient + Sonne + Mond
+    // bei Tag: dayFactor ~1 → hell
+    // bei Nacht: dayFactor ~0 → nur Mond / sehr wenig Ambient
+    ambientLight.intensity  = 0;
+    sunLight.intensity      = dayFactor;             // 1 Tag, 0 Nacht
+    moonLight.intensity     = 1 - dayFactor;         // 0 Tag, 1 Nacht
+
+    // Himmel: Tag langsam dunkel, Nacht langsam hell
+    daySky.material.opacity   = dayFactor;           // 1 Tag, 0 Nacht
+    nightSky.material.opacity = 1 - dayFactor;       // 0 Tag, 1 Nacht
+
+  } else {
+    // SPIELMODUS (Timer aus)
+
+    // Feste, angenehme Tageslicht-Situation
+    ambientLight.intensity = 0.2;   // schön hell
+    sunLight.intensity     = 1;
+    moonLight.intensity    = 0;     // Mond spielt hier keine Rolle
+
+    // Sonne fest an einen Punkt setzen
+    sunLight.position.set(300, 400, 100);
+    sunMesh.position.copy(sunLight.position);
+
+    // Mond weit unter den Horizont „parken“
+    moonLight.position.set(0, -1000, 0);
+    moonMesh.position.copy(moonLight.position);
+
+    // Himmel immer Tag
+    daySky.material.opacity   = 1;
+    nightSky.material.opacity = 0;
+  }
 
   renderer.render(scene, camera);
-  }
+}
 
 
 // Start
