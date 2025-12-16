@@ -4,7 +4,7 @@ import { GLTFLoader } from "/libs/three/examples/jsm/loaders/GLTFLoader.js";
 export class Character {
   constructor(scene, getHeightAt, spawnPos = { x: 0, z: 0 }) {
     this.scene = scene;
-    this.getHeightAt = getHeightAt; // Terrain-Höhenfunktion
+    this.getHeightAt = getHeightAt;
     this.spawnPos = spawnPos;
 
     this.mixer = null;
@@ -13,7 +13,6 @@ export class Character {
     this.currentAction = null;
 
     this.loader = new GLTFLoader();
-
     this.loadModel();
   }
 
@@ -22,21 +21,14 @@ export class Character {
       "/assets/character/idle.glb",
       (gltf) => {
         this.model = gltf.scene;
-
-        // Größe
         this.model.scale.set(2, 2, 2);
 
-        // Startposition (x,z)
         const x = this.spawnPos.x;
         const z = this.spawnPos.z;
         let y = 0;
-
-        if (this.getHeightAt) {
-          y = this.getHeightAt(x, z);
-        }
+        if (this.getHeightAt) y = this.getHeightAt(x, z);
 
         this.model.position.set(x, y, z);
-
         this.scene.add(this.model);
 
         this.mixer = new THREE.AnimationMixer(this.model);
@@ -47,7 +39,6 @@ export class Character {
           idleAction.play();
         }
 
-        // Weitere Animationen laden
         this.loadAdditionalAnimations();
       },
       undefined,
@@ -75,7 +66,6 @@ export class Character {
             console.warn(`${anim.file} hat keine Animationen!`);
             return;
           }
-
           this.actions[anim.name] = this.mixer.clipAction(gltf.animations[0]);
         },
         undefined,
