@@ -62,27 +62,39 @@ export function updateCamera(character, getHeightAt) {
   const model = character.model;
   const targetPos = model.position;
 
-  // ===== FPS-Kamera =====
-  // Augenhöhe über dem Spieler (ggf. an dein Modell anpassen)
-  const eyeHeight = 6;
+  // ===== Third-Person Kamera (frei per Maus, Cyberpunk-Style) =====
+  // Regler
+  const camDistance = 14;   // Abstand hinter dem Spieler
+  const camHeight = 7;      // Höhe über dem Spieler
+  const camShoulder = 2.0;  // seitlicher Versatz (rechts). Negativ = links
+  const lookAtHeight = 5;   // wohin die Kamera schaut (über dem Boden)
 
-  // Kamera sitzt auf dem Spieler
-  camera.position.set(
-    targetPos.x,
-    targetPos.y + eyeHeight,
-    targetPos.z
-  );
-
-  // Blickrichtung aus Yaw/Pitch
+  // Blickrichtung der Kamera aus Yaw/Pitch (wohin du "zielst")
   const forward = new THREE.Vector3(0, 0, -1);
   forward.applyAxisAngle(new THREE.Vector3(1, 0, 0), cameraPitch);
   forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraYaw);
+  forward.normalize();
 
-  const lookAtPos = camera.position.clone().add(forward);
+  // Rechts-Vektor für Schulterversatz
+  const up = new THREE.Vector3(0, 1, 0);
+  const right = new THREE.Vector3().crossVectors(forward, up).normalize();
+
+  // Wunsch-Position: hinter dem Spieler (entgegen forward), etwas hoch, etwas zur Seite
+  const desiredPos = new THREE.Vector3().copy(targetPos)
+    .addScaledVector(forward, -camDistance)
+    .addScaledVector(up, camHeight)
+    .addScaledVector(right, camShoulder);
+
+  // Smooth Follow (damit es nicht "klebt")
+  // 0.0 = keine Bewegung, 1.0 = sofort. 0.12–0.2 ist meist gut.
+  camera.position.lerp(desiredPos, 0.15);
+
+  // Kamera schaut auf den Spieler (leicht erhöht)
+  const lookAtPos = new THREE.Vector3(targetPos.x, targetPos.y + lookAtHeight, targetPos.z);
   camera.lookAt(lookAtPos);
 
   // Spieler dreht sich mit der Kamera (damit Bewegung + Animationsrichtung stimmen)
-  model.rotation.y = cameraYaw;
+  // model.rotation.y = cameraYaw;
 }
 
 // Für Movement: aktuelle Blickrichtung (Yaw) abfragen
