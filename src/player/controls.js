@@ -1,5 +1,6 @@
 import * as THREE from "/libs/three/three.module.js";
 import { isGameLocked } from "../core/gameState.js";
+import { getCameraYaw } from "../core/camera.js";
 
 export class PlayerControls {
   constructor(character, getHeightAt) {
@@ -23,26 +24,25 @@ export class PlayerControls {
 
     let moving = false;
     const model = this.character.model;
-    
 
-    // Vorwärts-/Rückwärtsbewegung in Blickrichtung
-    const forward = new THREE.Vector3();
-    model.getWorldDirection(forward);
+    // Bewegung relativ zur Kamera (FPS-Style)
+    const yaw = getCameraYaw();
+
+    const forward = new THREE.Vector3(0, 0, -1);
+    forward.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
     forward.y = 0;
     forward.normalize();
 
-    // Vorwärtsrichtung umdrehen, damit W nach vorne läuft
-    forward.negate();
+    const right = new THREE.Vector3(1, 0, 0);
+    right.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+    right.y = 0;
+    right.normalize();
 
-    const right = new THREE.Vector3();
-    right.crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
-
-    //Bewegung nur erlauben, wenn das Spiel nicht gesperrt ist
-    
+    // Bewegung nur erlauben, wenn das Spiel nicht gesperrt ist
     if (!isGameLocked()) {
       if (this.keys.w) {
-      model.position.addScaledVector(forward, this.speed * delta);
-      moving = true;
+        model.position.addScaledVector(forward, this.speed * delta);
+        moving = true;
       }
 
       if (this.keys.s) {
@@ -51,17 +51,17 @@ export class PlayerControls {
       }
 
       if (this.keys.a) {
-        model.rotation.y += 2 * delta;
+        model.position.addScaledVector(right, -this.speed * delta);
         moving = true;
       }
 
       if (this.keys.d) {
-        model.rotation.y -= 2 * delta;
+        model.position.addScaledVector(right, this.speed * delta);
         moving = true;
       }
     }
 
-    // ✅ Figur auf Terrain-Höhe setzen
+    // Figur auf Terrain-Höhe setzen
     if (this.getHeightAt) {
       const x = model.position.x;
       const z = model.position.z;
