@@ -55,7 +55,7 @@ export function createTerrain(scene) {
   groundGeometry.computeVertexNormals();
 
   const groundMaterial = new THREE.MeshLambertMaterial({
-    color: 0xCDA0F2, // dein aktuelles „Grün“
+    color: 0x15d17c, // dein aktuelles „Grün“
     flatShading: true,
   });
 
