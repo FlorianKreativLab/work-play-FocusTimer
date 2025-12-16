@@ -111,7 +111,7 @@ function updateCloudDayNight(dayFactor) {
   const dayColor = new THREE.Color(0xffffff);
   const nightColor = new THREE.Color(0x2b3640);
 
-  cloudMaterial.color.copy(nightColor.clone().lerp(dayColor, d));
+  //cloudMaterial.color.copy(nightColor.clone().lerp(dayColor, d));
   cloudMaterial.opacity = 0.55 + 0.45 * d;
 }
 
@@ -161,7 +161,7 @@ function animate() {
     if (dayFactor > 1) dayFactor = 1;
     if (dayFactor < 0) dayFactor = 0;
 
-    updateCloudDayNight(dayFactor);
+    //updateCloudDayNight(dayFactor);
 
     ambientLight.intensity = 0;
     sunLight.intensity = dayFactor;
@@ -188,7 +188,7 @@ function animate() {
     daySky.material.opacity = 1;
     nightSky.material.opacity = 0;
 
-    updateCloudDayNight(1);
+    //updateCloudDayNight(1);
 
     if (starField) starField.material.opacity = 0;
   }
