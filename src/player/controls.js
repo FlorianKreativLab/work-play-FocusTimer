@@ -25,6 +25,10 @@ export class PlayerControls {
     let moving = false;
     const model = this.character.model;
 
+    // Körper dreht sanft zur Kamera (Variante B: im Stand langsam, beim Laufen schneller)
+    const bodyTurnSpeedIdle = 2.0;   // rad/s
+    const bodyTurnSpeedMove = 10.0;  // rad/s
+
     // Bewegung relativ zur Kamera (FPS-Style)
     const yaw = getCameraYaw();
 
@@ -60,6 +64,16 @@ export class PlayerControls {
         moving = true;
       }
     }
+
+    // --- Körper-Yaw sanft Richtung Kamera-Yaw drehen ---
+    // Kürzeste Winkel-Differenz berechnen (-PI..PI)
+    const currentYaw = model.rotation.y;
+    const targetYaw = yaw;
+    let diff = targetYaw - currentYaw;
+    diff = ((diff + Math.PI) % (Math.PI * 2)) - Math.PI;
+
+    const turnSpeed = moving ? bodyTurnSpeedMove : bodyTurnSpeedIdle;
+    model.rotation.y = currentYaw + diff * Math.min(1, turnSpeed * delta);
 
     // Figur auf Terrain-Höhe setzen
     if (this.getHeightAt) {
