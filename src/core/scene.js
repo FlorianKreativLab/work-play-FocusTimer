@@ -152,12 +152,12 @@ createStarField(scene);
 // 2 Layer: nah (schneller) + fern (langsamer) => Parallax
 
 const cloudMaterial = new THREE.MeshStandardMaterial({
-  color: 0xffffff,
+  color: 0x94fdb,
   roughness: 1.0,
   metalness: 0.0,
   flatShading: true,
   transparent: true,
-  opacity: 1
+  opacity: 1,
 });
 
 function createLowPolyCloud() {
