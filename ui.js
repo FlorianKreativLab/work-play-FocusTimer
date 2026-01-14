@@ -1,7 +1,7 @@
 // ui.js
 
 import { setDayNightProgress } from "./src/core/dayNight.js";
-import { lockGame, unlockGame } from "./src/core/gameState";
+import { lockGame, unlockGame } from "./src/core/gameState.js";
 
   // ---------- Panel öffnen / schließen ----------
 function initHudPanel() {
@@ -207,14 +207,30 @@ window.addEventListener("DOMContentLoaded", () => {
 
    
     const gemCountEl = document.getElementById("gem-count");
-    let gemCount = 0;
+    const GEMS_KEY = "focus_gems_v1";
+
+    function getGems() {
+    const n = Number(localStorage.getItem(GEMS_KEY) || 0);
+    return Number.isFinite(n) ? n : 0;
+}
+
+    function setGems(next) {
+    const v = Math.max(0, Math.floor(Number(next) || 0));
+    localStorage.setItem(GEMS_KEY, String(v));
+    window.dispatchEvent(new CustomEvent("gems:changed", { detail: { gems: v } }));
+}
 
     function updateGemCount() {
       if (!gemCountEl) return;
-      gemCountEl.textContent =
-        gemCount + " " + (gemCount === 1 ? "Edelstein" : "Edelsteine");
-    }
+      const g = getGems();
+      gemCountEl.textContent = `${g} ${g === 1 ? "Diamant" : "Diamanten"}`;
+}
+
+    // Initial
     updateGemCount();
+
+    // Wenn main.js Gems ausgibt (Shop), aktualisiert UI live
+    window.addEventListener("gems:changed", updateGemCount);
 
     function setTimerText(text) {
       if (timerEl) {
@@ -432,7 +448,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
           // Edelstein nach abgeschlossener Pausephase
           if (!isFocus) {
-            gemCount++;
+            const gems = getGems() + 1;
+            setGems(gems);
             updateGemCount();
           }
 
