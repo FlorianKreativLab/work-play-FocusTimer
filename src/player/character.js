@@ -91,4 +91,14 @@ export class Character {
   update(delta) {
     if (this.mixer) this.mixer.update(delta);
   }
+  setPosition(x, z) {
+    if (!this.model) return;
+    const y = this.getHeightAt ? this.getHeightAt(x, z) : 0;
+    this.model.position.set(x, y, z);
+  }
+
+  getPosition() {
+    if (!this.model) return null;
+    return { x: this.model.position.x, y: this.model.position.y, z: this.model.position.z };
+  }
 }
