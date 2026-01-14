@@ -8,6 +8,27 @@ const hillCount = 25;
 const maxRadius = 120;
 const maxHeight = 40;
 
+// --------- Deterministic RNG helpers ----------
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hash2(seed, i) {
+  // deterministischer Hash pro Index
+  let x = (seed ^ (i + 0x9e3779b9)) >>> 0;
+  x = Math.imul(x ^ (x >>> 16), 0x7feb352d);
+  x = Math.imul(x ^ (x >>> 15), 0x846ca68b);
+  x = (x ^ (x >>> 16)) >>> 0;
+  return x;
+}
+
 // Hilfsfunktion: Höhe an beliebiger Position berechnen
 export function getHeightAt(x, z) {
   let y = 0;
@@ -23,16 +44,20 @@ export function getHeightAt(x, z) {
   return y;
 }
 
-export function createTerrain(scene) {
+export function createTerrain(scene, seed = 1337) {
   const groundGeometry = new THREE.PlaneGeometry(1000, 1000, 200, 200);
   groundGeometry.rotateX(-Math.PI / 2);
 
+  // deterministisch: Hills neu aufbauen
+  hills.length = 0;
+  const rng = mulberry32(Math.floor(seed) || 0);
+
   // Hügelzentren anlegen
   for (let h = 0; h < hillCount; h++) {
-    const hx = (Math.random() - 0.5) * 800;
-    const hz = (Math.random() - 0.5) * 800;
-    const radius = maxRadius * (0.5 + Math.random());
-    const height = maxHeight * (0.5 + Math.random());
+    const hx = (rng() - 0.5) * 800;
+    const hz = (rng() - 0.5) * 800;
+    const radius = maxRadius * (0.5 + rng());
+    const height = maxHeight * (0.5 + rng());
     hills.push({ hx, hz, radius, height });
   }
 
@@ -45,8 +70,9 @@ export function createTerrain(scene) {
 
     let y = getHeightAt(x, z);
 
-    // kleines Rauschen für organischere Oberfläche
-    y += (Math.random() - 0.5) * 0.8;
+    // deterministisches per-vertex noise
+    const n = mulberry32(hash2(Math.floor(seed) || 0, i))();
+    y += (n - 0.5) * 0.8;
 
     positions.setY(i, y);
   }
@@ -62,4 +88,9 @@ export function createTerrain(scene) {
   ground = new THREE.Mesh(groundGeometry, groundMaterial);
   ground.receiveShadow = true;
   scene.add(ground);
+}
+
+// Für Raycasting / Placement
+export function getGroundMesh() {
+  return ground;
 }
